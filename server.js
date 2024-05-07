@@ -12,7 +12,7 @@ app.use(moragan("dev"));
 app.use("/admin", require("./routes/adminRoutes"));
 
 const port = process.env.PORT || 3000;
-
+console.log("HAHAHA");
 app.listen(port, () => {
   console.log(
     `Server Running in ${process.env.DEV_MODE} Mode on port ${process.env.PORT}`
