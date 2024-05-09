@@ -2,6 +2,7 @@ const express = require('express');
 const router= express.Router();
 
 const Specialite = require('../models/specialite');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 // name, about
 router.post('/add',async(req,res)=>{
@@ -40,7 +41,7 @@ router.get('/all',async(req,res)=>{
 })
 
 
-router.get('/getById/:id',async(req,res)=>{
+router.get('/get/:id',authMiddleware,async(req,res)=>{
     try {
         id=req.params.id 
         spec= await Specialite.findById({'_id':id})

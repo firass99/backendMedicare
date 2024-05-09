@@ -5,12 +5,13 @@ const User = require('../models/user');
 const bcrypt =require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const multer = require('multer');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 ////// START UPLOAD FILE
 filename=''
 const myStorage=multer.diskStorage({
     //2params
-    destination:'./uploads',
+    destination:'./uploads/',
 
     // 3 params req , file ,where to redirect :: this function create the file name
     filename:(req,file,redirect)=>{
@@ -20,16 +21,23 @@ const myStorage=multer.diskStorage({
         filename=fle
     }
 })
-//et create middleare now  EZ
+    //et create middleare now  EZ
 const upload=multer({storage:myStorage});
 //// END UPLOAD FILE
 
 
 
-router.post('/register',async (req,res)=>{
+router.post('/register',upload.any('image'),async (req,res)=>{
     //REQ DATA
-    data=req.body
+    let data=req.body
     //CREATE  INSTANCE
+    let usr= new User(data)
+
+    if (data.image==""){
+        usr.image= "default.jpeg"
+    }
+
+    /** 
     usr=new User({
         name:data.name,
         last_name:data.last_name,
@@ -44,7 +52,8 @@ router.post('/register',async (req,res)=>{
     if(data.role ){
         usr.role=data.role;
         //usr.specialite=data.specialite;
-    }  
+    }  */
+    
 
     //CRYPT PASSWORD
     //1) create HashKey
@@ -53,10 +62,11 @@ router.post('/register',async (req,res)=>{
     usr.password= await bcrypt.hashSync(data.password, salt)
 
     usr.save().then((saved)=>{
-        res.status(200).send(saved)
-    }).catch((error)=>{
-        res.status(400).send(error)
+        res.status(200).send({success:true, data:saved})
+    }).catch((err)=>{
+        res.status(400).send({success:false, error:err})
     })
+
 })
 
 
@@ -82,17 +92,21 @@ router.post('/login',async (req,res)=>{
                 email:user.email,
                 role:user.role
             }
-            secret= process.env.SECRET_KEY
+            secret= process.env.JWT_KEY
             token=jwt.sign(payload,secret,{expiresIn:'1d'})
             res.status(200).send({success:true, jwtToken:token })
 
         }}
 })
 
-router.post('/logout',(req,res)=>{
-    data=req.body
-    const decodedToken = jwt.verify(tokenData, process.env.secret);//secret key
-    decodedToken.expiresIn='';
+router.post('/logout',authMiddleware,(req,res)=>{
+        const token = req.header('Authorization');
+        const tokenData = token.split(' ')[1];
+
+        const decodedToken = jwt.verify(tokenData, process.env.JWT_KEY);//secret key
+        decodedToken.exp=0;
+        decodedToken.expiresIn='0d';
+        res.send({data:decodedToken})
 
 })
 
@@ -167,7 +181,6 @@ router.put('/update/:id',async(req,res)=>{
         res.send(Usr+"Updated")
     } catch (error) {
         res.send(error)
-        
     }
 })
 
