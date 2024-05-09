@@ -1,8 +1,9 @@
 const express = require('express');
 const router=express.Router();
 const jwt = require('jsonwebtoken');
-require('moment');
+const moment= require('moment');
 const Consultation=require('../models/consultation');
+const Notification=require('../models/notification');
 
 
 
@@ -15,14 +16,14 @@ router.post('/add',async (req,res)=>{
         data= req.body
 
         token = header.split(' ')[1];
-
         tokenData =await jwt.verify(token, process.env.JWT_KEY);//secret key
-       
                 //
-        dateCons=moment(data.date,'DD-MM-YYYY')
-        timeCons=moment(data.time,'HH:MM:SS')
-        validCons= await Consultation.find({date:dateCons, time:timeCons })
-        if(!valid){
+        dateCons=moment(data.date).format("YYYY-MM-DD")
+        
+        timeCons=moment(data.time).format("HH:mm")
+        validCons= await Consultation.findOne({date:dateCons, heure:timeCons })
+        
+        if(!validCons){
             try {
                 newCons= new Consultation({
                     id_docteur:data.id_docteur,
@@ -31,14 +32,20 @@ router.post('/add',async (req,res)=>{
                     heure: timeCons                  
                 })
                 saved= await newCons.save()
-                res.status(200).send({success:true, new:true})
+                //save notification    ID DOCTOR  .  MUST .  BE OBJECT ID
+                if(saved){
+                    notif= new Notification({id_User: data.id_docteur, description:"une nouvelle consultation est ajoutée"})
+                    notifSave= await notif.save()
+                }
+
+                res.status(200).send({success:true, saved})
 
             } catch (err) {
                 res.status(500).send({success: false, error: err})
             }
 
         }else{
-            res.status(404).send({success:false, message: "Date et Heure invalid"})
+            res.status(404).send({success:false,  message:"consulation is already taken", validCo:validCons})
         }
 
 
@@ -51,6 +58,17 @@ router.get('/get/:id',async(req,res)=>{
     try {
         id=req.params.id;
         rdv=await Consultation.findById(id)
+        res.status(200).send(rdv)
+    } catch (error) {
+        res.status(404).send(error)
+    }
+})
+
+// GET RDV BY . DOCTOR
+router.get('/doctor',async(req,res)=>{
+    try {
+        id=req.params.id;
+        rdv=await Consultation.find({id_docteur:req.body.id_docteur})
         res.status(200).send(rdv)
     } catch (error) {
         res.status(404).send(error)

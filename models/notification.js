@@ -9,6 +9,10 @@ const schemaNotification= mongoose.Schema({
     description:{
         type:String,
         required: true
+    },
+    seen:{
+        type:Boolean,
+        default:false
     }
 })
 
