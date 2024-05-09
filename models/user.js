@@ -10,8 +10,8 @@ const userSchema= mongoose.Schema(
     password:{type: String ,required: true },
     role:{type: String ,enum: Roles ,default: "patient"},
     phone:{type: String ,required:true },
-//  phone:{type: String ,required:[isUser,"Num Tel required "] },
     image:{type: String},
+    // about& specialite with addred by admin
     about:{type: String ,required:[isDoctor,"About is required "]},
     specialite:{        
         type:mongoose.Schema.Types.ObjectId, 

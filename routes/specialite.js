@@ -22,7 +22,7 @@ router.put('/update/:id',async(req,res)=>{
     try {
         id=req.params.id
         Data =req.body;
-        Spec=await Specialite.findByIdAndUpdate({_id:id},Data)
+        Spec=await Specialite.findByIdAndUpdate({_id:id},Data,{new: true})
 
         res.status(200).send({success:true, data:Spec})
     } catch (err) {

@@ -2,9 +2,10 @@ const express = require('express');
 const router=express.Router();
 
 const User = require('../models/user');
-const bcrypt =require('bcryptjs')
-const jwt = require('jsonwebtoken')
+const bcrypt =require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const multer = require('multer');
+const moment = require('moment');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 ////// START UPLOAD FILE
@@ -28,40 +29,23 @@ const upload=multer({storage:myStorage});
 
 
 router.post('/register',upload.any('image'),async (req,res)=>{
-    //REQ DATA
     let data=req.body
-    //CREATE  INSTANCE
     let usr= new User(data)
 
-    if (data.image==""){
-        usr.image= "default.jpeg"
+    if(filename.length>0){
+        usr.image=filename
+    }else{
+        usr.image="default.jpeg"
     }
-
-    /** 
-    usr=new User({
-        name:data.name,
-        last_name:data.last_name,
-        age:data.age,
-        email:data.age,
-        password:data.password,
-        phone:data.phone,
-        image:"default.jpeg"
-
-    })
-
-    if(data.role ){
-        usr.role=data.role;
-        //usr.specialite=data.specialite;
-    }  */
     
-
+    //ageeing
+    usr.age=moment(data.age,'YYYY-MM-DD')
     //CRYPT PASSWORD
-    //1) create HashKey
     salt=bcrypt.genSaltSync(10)
-    //2) hash password
     usr.password= await bcrypt.hashSync(data.password, salt)
 
     usr.save().then((saved)=>{
+        filename=''
         res.status(200).send({success:true, data:saved})
     }).catch((err)=>{
         res.status(400).send({success:false, error:err})
@@ -108,10 +92,13 @@ router.post('/logout',authMiddleware,(req,res)=>{
         decodedToken.expiresIn='0d';
         res.send({data:decodedToken})
 
+        req.setHeader('Clear-Site-Data', '"cookies"');
+        res.status(200).send({ message: 'You are logged out!' });
+
 })
 
 //GET ALL with async and await ( allways try catch blocs first)
-router.get('/getAll',async(req,res)=>{
+router.get('/users',async(req,res)=>{
     try{
          Data = await User.find()
          res.status(200).send(Data)
@@ -133,12 +120,13 @@ router.get('/doctors',async(req,res)=>{
     }}
 })
 
+
 //GET Doctor BY ID try catch, when user OPERATIION.then() : then drops a resolved value to treat
 router.get('/doctor/:id',async (req,res)=>{
     try {
         myId= req.params.id;
 //      Data= User.findOne('params') ==> first bely nheb, f object params
-        Data= await User.find({_id:myId,role:'docteur'})
+        Data= await User.find({_id:myId, role:'docteur'})
         res.status(200).send(Data)
     } catch (error) {
         res.status(404).send(error)
@@ -173,14 +161,28 @@ router.delete('/delete/:id', async(req,res)=>{
 })
 
 //MISE A JOUR ACCOUNT
-router.put('/update/:id',async(req,res)=>{
+router.put('/update/:id',upload.any('image'),async(req,res)=>{
+
+
     try {
         id= req.params.id
+        imgNew= req.body.image 
         UserData= req.body
-        Usr= await User.findOneAndUpdate({_id:id},(UserData))
-        res.send(Usr+"Updated")
-    } catch (error) {
-        res.send(error)
+        
+        if(filename.length>0){
+            UserData.image=filename
+        }
+        if(UserData.password.length>0){
+        salt=bcrypt.genSaltSync(10)
+        UserData.password= await bcrypt.hashSync(UserData.password, salt)
+        }
+
+        Usr= await User.findOneAndUpdate({_id:id},UserData,{new: true})
+        filename=''
+        
+        res.status(200).send({success:true, Usr})
+    } catch (err) {
+        res.status(404).send({error: err})
     }
 })
 

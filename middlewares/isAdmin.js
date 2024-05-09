@@ -8,7 +8,7 @@ const isAdmin = (req,res,next) =>{
     try{
         //extraction du token la partie 1(khater 3ana bearer token donc bch nekhdhou juste token heka 3leh 3mlna split)
         const tokenData = token.split(' ')[1];
-        const decodedToken = jwt.verify(tokenData, process.env.secret);//secret key
+        const decodedToken = jwt.verify(tokenData, process.env.JWT_KEY);//secret key
         if(decodedToken.role=="admin"){
             next();
             req.userId=decodedToken._id;

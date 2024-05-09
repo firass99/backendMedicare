@@ -6,7 +6,7 @@ const schemaConsultation= mongoose.Schema({
     date:{type: String},
     heure:{type:String},
     status:{type: String,default:"en cours"},
-    id_payment:{type: String, default:"idadlam"}
+    payer:{type: Boolean, default:false}
     }
 )
 const Consultation=mongoose.model('Consultation', schemaConsultation)
