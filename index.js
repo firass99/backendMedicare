@@ -4,6 +4,7 @@ require('./config/connect');
 const userApi=require('./routes/user')
 const consultationApi=require('./routes/consultation')
 const specialiteApi=require('./routes/specialite')
+const notificationApi=require('./routes/notification')
 
 
 const app=express()
@@ -16,6 +17,7 @@ app.use('/getImage',express.static('./uploads'))
 app.use('/user',userApi)
 app.use('/consultation',consultationApi)
 app.use('/specialite',specialiteApi)
+app.use('/notification',notificationApi)
 
 
 app.listen(3000,()=>{
