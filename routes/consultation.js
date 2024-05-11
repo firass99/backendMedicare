@@ -11,45 +11,50 @@ const Notification=require('../models/notification');
 // ADD . R D V 
 router.post('/add',async (req,res)=>{
     //get data -> create new instance -> save the new data 
-
-        header=req.header('Authorization');
-        data= req.body
-
+        console.log("**** THIS IS RESULT *****");
+        const  header=req.header('Authorization');
+        const   data= req.body;
         token = header.split(' ')[1];
         tokenData =await jwt.verify(token, process.env.JWT_KEY);//secret key
-                //
-        dateCons=moment(data.date).format("YYYY-MM-DD")
+
+        console.log({'TOKEN DATA': tokenData});  
+        console.log({'REQUEST DATA': data});   
+        console.log({'PARSED DATE ': Date.parse(data.dateT)});
+        console.log({'PARSED TIME ': Date.parse(data.time)});
+
+        dateCons=moment(data.dateT).format("DD/MM/YYYY");
+        console.log(dateCons);
+        console.log(data.time.toString());
+
         
-        timeCons=moment(data.time).format("HH:mm")
-        validCons= await Consultation.findOne({date:dateCons, heure:timeCons })
-        
-        if(!validCons){
+        validCons= await Consultation.findOne({date:data.dateT, heure:data.time});
+        //find() .length>0
+        if(validCons){
+            res.status(404).send({success:false,  message:"consulation is already taken"})
+            console.log("consultation already taken "+ ' TAKE BY =>>' +validCons+ ' <== TAKE BY');
+
+        }else {
             try {
                 newCons= new Consultation({
                     id_docteur:data.id_docteur,
                     id_patient: tokenData._id,
-                    date: dateCons,
-                    heure: timeCons                  
+                    date: data.dateT,
+                    heure: data.time                  
                 })
-                saved= await newCons.save()
-                //save notification    ID DOCTOR  .  MUST .  BE OBJECT ID
+                saved=await  newCons.save()
+                console.log("savedd "+saved );
+                res.status(200).json({success:true, saved});
+                //**save notification    ID DOCTOR  .  MUST .  BE OBJECT ID
                 if(saved){
-                    notif= new Notification({id_User: data.id_docteur, description:"une nouvelle consultation est ajoutée"})
+                    notif= new Notification({id_User:data.id_docteur, description:"une nouvelle consultation est ajoutée"})
                     notifSave= await notif.save()
                 }
-
-                res.status(200).send({success:true, saved})
-
-            } catch (err) {
-                res.status(500).send({success: false, error: err})
-            }
-
-        }else{
-            res.status(404).send({success:false,  message:"consulation is already taken", validCo:validCons})
+                } catch (err) {
+                    res.status(500).send({success: false, message : "Fail to save"});                
+                    console.log("Fail to save");
+                    }
         }
-
-
-})
+        })
 
 
 

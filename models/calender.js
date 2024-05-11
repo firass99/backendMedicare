@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const calendrierSchema=mongoose.Schema({
-    date:{type: String, required:true},
+    date:{type: Date, required:true},
     isAvailable:{type:Boolean, required:true}
 })
 
