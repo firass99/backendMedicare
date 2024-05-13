@@ -13,7 +13,7 @@ router.post('/add',async(req,res)=>{
 
         res.status(200).send({success:true, data:resp})
     } catch (err) {
-        res.status(400).send({success:false,error:err})
+        res.status(400).send({success:false, error:err})
         }
 })
 

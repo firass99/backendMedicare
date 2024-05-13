@@ -27,7 +27,7 @@ router.post('/add',async (req,res)=>{
         console.log(data.time.toString());
 
         
-        validCons= await Consultation.findOne({date:data.dateT, heure:data.time});
+        validCons= await Consultation.findOne({date:data.dateT, heure:data.time, status:"en cours"});
         //find() .length>0
         if(validCons){
             res.status(404).send({success:false,  message:"consulation is already taken"})
@@ -85,9 +85,9 @@ router.get('/doctor',async(req,res)=>{
 router.get('/all',async (req,res)=>{
     try {
         rdv= await Consultation.find()
-        res.status(200).send(rdv)
-    } catch (error) {
-        res.status(400).send(error)
+        res.status(200).send({success:true, rdv})
+    } catch (err) {
+        res.status(400).send({error: err})
     }
 })
 

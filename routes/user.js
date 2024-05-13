@@ -6,7 +6,9 @@ const bcrypt =require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const moment = require('moment');
+const isAdmin = require('../middlewares/isAdmin');
 const authMiddleware = require('../middlewares/authMiddleware');
+const Specialite = require('../models/specialite');
 
 ////// START UPLOAD FILE
 filename=''
@@ -31,25 +33,35 @@ const upload=multer({storage:myStorage});
 router.post('/register',upload.any('image'),async (req,res)=>{
     let data=req.body
     let usr= new User(data)
+///////
 
-    if(filename.length>0){
-        usr.image=filename
+    userExist= User.findOne({email: data.email})
+    if(userExist){
+        res.status(400).send({message: "User already exists"})
     }else{
-        usr.image="default.jpeg"
-    }
-    
-    //ageeing
-    usr.age=moment(data.age,'YYYY-MM-DD')
-    //CRYPT PASSWORD
-    salt=bcrypt.genSaltSync(10)
-    usr.password= await bcrypt.hashSync(data.password, salt)
 
-    usr.save().then((saved)=>{
-        filename=''
-        res.status(200).send({success:true, data:saved})
-    }).catch((err)=>{
-        res.status(400).send({success:false, error:err})
-    })
+        if(filename.length>0){
+            usr.image=filename
+        }else{
+            usr.image="default.jpeg"
+        }
+        //ageeing
+        usr.age=moment(data.age,'YYYY-MM-DD')
+        //CRYPT PASSWORD
+        salt=bcrypt.genSaltSync(10)
+        usr.password= await bcrypt.hashSync(data.password, salt)
+
+        usr.save().then((saved)=>{
+            filename=''
+            res.status(200).send({success:true, data:saved})
+        }).catch((err)=>{
+            res.status(400).send({success:false, error:err})
+        })
+}
+
+
+//////
+    
 
 })
 
@@ -96,6 +108,41 @@ router.post('/logout',authMiddleware,(req,res)=>{
         res.status(200).send({ message: 'You are logged out!' });
 
 })
+
+
+
+router.post('/create/doctor' ,isAdmin, async(req,res)=>{
+    const data= req.body;
+
+    userExist= await User.findOne({email: data.email});
+    console.log(userExist)
+    if(userExist){
+     return   res.status(400).send({message: "Doctor Email already exists"})
+    }else{
+        try {
+            doct= new User({
+                name:data.name,
+                last_name:data.last_name,
+                age:data.age,
+                email:data.email,
+                password:data.password,
+                role:"docteur",
+                phone:data.phone,
+                image:"default.png",
+                specialite:data.specialite,
+                about:"this is default doctor description"
+                })
+            saved= await doct.save()
+            res.status(200).send({success: true, "new Doctor" : saved})    
+    
+        } catch (err) {
+            res.status(400).send({success:false, error:err})
+        }
+    }
+    
+})
+
+
 
 //GET ALL with async and await ( allways try catch blocs first)
 router.get('/users',async(req,res)=>{
@@ -162,8 +209,6 @@ router.delete('/delete/:id', async(req,res)=>{
 
 //MISE A JOUR ACCOUNT
 router.put('/update/:id',upload.any('image'),async(req,res)=>{
-
-
     try {
         id= req.params.id
         imgNew= req.body.image 

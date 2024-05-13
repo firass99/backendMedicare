@@ -6,7 +6,7 @@ const userSchema= mongoose.Schema(
     name:{type: String ,required: true },
     last_name:{type: String ,required: true },
     age:{type: Date ,required: true },
-    email:{type: String ,required: true ,unqiue: true },
+    email:{type: String ,required: true  },
     password:{type: String ,required: true },
     role:{type: String ,enum: Roles ,default: "patient"},
     phone:{type: String ,required:true },

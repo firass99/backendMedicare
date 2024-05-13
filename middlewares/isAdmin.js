@@ -10,10 +10,13 @@ const isAdmin = (req,res,next) =>{
         const tokenData = token.split(' ')[1];
         const decodedToken = jwt.verify(tokenData, process.env.JWT_KEY);//secret key
         if(decodedToken.role=="admin"){
-            next();
             req.userId=decodedToken._id;
+            next();
         }
     }catch(error){
-        return res.status(401).send('Non Authorized');
+        return res.status(401).send('Your Not Admin');
     }
 }
+
+
+module.exports= isAdmin;
