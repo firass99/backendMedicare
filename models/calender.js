@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const calendrierSchema=mongoose.Schema({
+const calenderSchema=mongoose.Schema({
     date:{type: Date, required:true},
     isAvailable:{type:Boolean, required:true}
 })
@@ -19,5 +19,5 @@ const calendrierSchema=mongoose.Schema({
     });
  */
 
-const Calendrier=mongoose.model('Calendrier',specialiteSchema)
-module.exports=Calendrier
+const Calender=mongoose.model('Calender',calenderSchema)
+module.exports=Calender

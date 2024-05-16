@@ -1,22 +1,22 @@
 const jwt = require('jsonwebtoken');
 
-//next khatro middlware maandouch retour
-const isAdmin = (req,res,next) =>{
-//header c'est la partie identification de la requete
+const isAdmin = (req, res, next) => {
     const token = req.header('Authorization');
 
-    try{
-        //extraction du token la partie 1(khater 3ana bearer token donc bch nekhdhou juste token heka 3leh 3mlna split)
-        const tokenData = token.split(' ')[1];
-        const decodedToken = jwt.verify(tokenData, process.env.JWT_KEY);//secret key
-        if(decodedToken.role=="admin"){
-            req.userId=decodedToken._id;
+    try {
+        const decodedToken = jwt.verify(token.split(' ')[1], process.env.JWT_KEY);
+        if (decodedToken.role === "admin") {
+            req.userId = decodedToken._id;
             next();
+            return;
         }
-    }catch(error){
-        return res.status(401).send('Your Not Admin');
+    } catch (error) {
+        // If there's an error or the user is not admin, send 401 Unauthorized
+        return res.status(401).send('You are not authorized to access this resource.');
     }
-}
 
+    // If the user is not admin, send 401 Unauthorized
+    return res.status(401).send('You are not authorized to access this resource.');
+};
 
-module.exports= isAdmin;
+module.exports = isAdmin;

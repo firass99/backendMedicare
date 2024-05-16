@@ -4,12 +4,14 @@ const jwt = require('jsonwebtoken');
 const moment= require('moment');
 const Consultation=require('../models/consultation');
 const Notification=require('../models/notification');
+const authMiddleware = require('../middlewares/authMiddleware');
+const Calender = require('../models/calender');
 
 
 
 
 // ADD . R D V 
-router.post('/add',async (req,res)=>{
+router.post('/add', authMiddleware, async (req,res)=>{
     //get data -> create new instance -> save the new data 
         console.log("**** THIS IS RESULT *****");
         const  header=req.header('Authorization');
@@ -27,12 +29,17 @@ router.post('/add',async (req,res)=>{
         console.log(data.time.toString());
 
         
-        validCons= await Consultation.findOne({date:data.dateT, heure:data.time, status:"en cours"});
+        validCons= await Consultation.findOne({date:data.dateT, heure:data.time, status:"en cours"} );
+        jrCalender= await Calender.findOne({date:data.dateT, isAvailable:false })
+        
         //find() .length>0
         if(validCons){
             res.status(404).send({success:false,  message:"consulation is already taken"})
             console.log("consultation already taken "+ ' TAKE BY =>>' +validCons+ ' <== TAKE BY');
 
+        }else if(jrCalender){
+            res.status(404).send({success:false,  message:"La Date seelctionnée est jours ferie"})
+            console.log(jrCalender);
         }else {
             try {
                 newCons= new Consultation({
@@ -82,18 +89,23 @@ router.get('/doctor',async(req,res)=>{
 
 
 // GET . ALL . R D V
-router.get('/all',async (req,res)=>{
+router.get('/all', authMiddleware, async (req, res) => {
+    const token = req.header('Authorization');
+    const tokenData = token.split(' ')[1];
+    const decodedToken = jwt.verify(tokenData, process.env.JWT_KEY);
+
     try {
-        rdv= await Consultation.find()
-        res.status(200).send({success:true, rdv})
+        // Use logical OR operator to find consultations for either the doctor or the patient
+        const rdv = await Consultation.find({ $or: [{ id_docteur: decodedToken._id }, { id_patient: decodedToken._id }] });
+        res.status(200).send({ success: true, rdv });
     } catch (err) {
-        res.status(400).send({error: err})
+        res.status(400).send({ success: false, error: err });
     }
-})
+});
 
 
 //MISE A JOUR ACCOUNT
-router.put('/update/:id',async(req,res)=>{
+router.put('/update/:id',authMiddleware ,async(req,res)=>{
     try {
         id= req.params.id
         rdvData= req.body

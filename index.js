@@ -7,6 +7,7 @@ const userApi=require('./routes/user')
 const consultationApi=require('./routes/consultation')
 const specialiteApi=require('./routes/specialite')
 const notificationApi=require('./routes/notification')
+const calenderApi=require('./routes/calender')
 const bodyParser = require('body-parser')
 
 
@@ -26,6 +27,7 @@ app.use('/getImage',express.static('./uploads'))
 app.use('/user',userApi)
 app.use('/consultation',consultationApi)
 app.use('/specialite',specialiteApi)
+app.use('/calender',calenderApi)
 app.use('/notification',notificationApi)
 
 //this will show all paths

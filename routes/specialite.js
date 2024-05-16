@@ -3,9 +3,10 @@ const router= express.Router();
 
 const Specialite = require('../models/specialite');
 const authMiddleware = require('../middlewares/authMiddleware');
+const isAdmin = require('../middlewares/isAdmin');
 
 // name, about
-router.post('/add',async(req,res)=>{
+router.post('/add', isAdmin,async(req,res)=>{
     try {
         newData =req.body;
         newSpec= new Specialite(newData)
@@ -18,7 +19,7 @@ router.post('/add',async(req,res)=>{
 })
 
 
-router.put('/update/:id',async(req,res)=>{
+router.put('/update/:id',isAdmin ,async(req,res)=>{
     try {
         id=req.params.id
         Data =req.body;
@@ -31,7 +32,7 @@ router.put('/update/:id',async(req,res)=>{
 })
 
 
-router.get('/all',async(req,res)=>{
+router.get('/all', async(req,res)=>{
     try {
         spec= await Specialite.find()
         res.status(200).send({success:true, data:spec})
@@ -41,7 +42,7 @@ router.get('/all',async(req,res)=>{
 })
 
 
-router.get('/get/:id',authMiddleware,async(req,res)=>{
+router.get('/get/:id',async(req,res)=>{
     try {
         id=req.params.id 
         spec= await Specialite.findById({'_id':id})
@@ -52,7 +53,7 @@ router.get('/get/:id',authMiddleware,async(req,res)=>{
 })
 
 
-router.delete('/delete/:id', async(req,res)=>{
+router.delete('/delete/:id',isAdmin,  async(req,res)=>{
     try {
         id=req.params.id
         spec= await Specialite.findByIdAndDelete({'_id':id})
