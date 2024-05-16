@@ -9,15 +9,24 @@ const router = express.Router();
 
 // add date
 router.post('/add', isAdmin, async(req,res)=>{
-    try {
-        newData =req.body;
-        newCalender= new Calender(newData)
-        resp= await newCalender.save()
+    
+    exist= Calender.find({date: req.date})
 
-        res.status(200).send({success:true, data:resp})
-    } catch (err) {
-        res.status(400).send({success:false, error:err})
-        }
+    if(exist){
+        res.status(400).send({success: false, message: "this date already added"})
+    }else{
+        try {
+            newData =req.body;
+            newCalender= new Calender(newData)
+            resp= await newCalender.save()
+    
+            res.status(200).send({success:true, data:resp})
+        } catch (err) {
+            res.status(400).send({success:false, error:err})
+            }
+    }
+    
+    
 })
 
 

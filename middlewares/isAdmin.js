@@ -12,11 +12,9 @@ const isAdmin = (req, res, next) => {
         }
     } catch (error) {
         // If there's an error or the user is not admin, send 401 Unauthorized
-        return res.status(401).send('You are not authorized to access this resource.');
+        return res.status(401).send('You are not authorized to access Admin resource.');
     }
-
-    // If the user is not admin, send 401 Unauthorized
-    return res.status(401).send('You are not authorized to access this resource.');
+    return res.status(401).send('You are not authorized to access Admin resource.');
 };
 
 module.exports = isAdmin;
