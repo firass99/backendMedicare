@@ -14,12 +14,13 @@ const bodyParser = require('body-parser')
 const app=express()
 app.use(express.json())
 app.use(cors())
-app.use(express.urlencoded({extended:false}))
-// parse application/x-www-form-urlencoded : to parse req of content type app
-app.use(bodyParser.urlencoded({ extended: false }))
+
 
 // parse application/json
 app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
+
+
 //this route MUST HAVE TO GET IMAGES
 app.use('/getImage',express.static('./uploads'))
 
@@ -36,7 +37,7 @@ endpoints.forEach(item => {
     console.log('Method :   '+ item.methods + '   <|||> '+ ' URL : ' +item.path);
 });
 
-app.listen(3000,()=>{
+app.listen(process.env.PORT,()=>{
     console.log('server works at 3000')
 })
 
